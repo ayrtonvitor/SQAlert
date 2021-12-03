@@ -1,4 +1,3 @@
-#define CONFIG_CATCH_MAIN
 #include "catchConf.h"
 #include "../stock-quote-alert/dataRequestController.h"
 #include "../stock-quote-alert/dataRequestController.cpp"
