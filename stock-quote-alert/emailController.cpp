@@ -18,7 +18,7 @@
 #include <string>
 
 void composeMail(PriceAlert stock, SMTPSettings smtpSettings){
-    /* Composese the email recommending the bought or sell of a given stock
+    /* Composese the email recommending buying or selling a given stock
      *
      * Parameters
      * ----------
@@ -49,9 +49,9 @@ void composeMail(PriceAlert stock, SMTPSettings smtpSettings){
             + "As " + stock.time + ", o preco do papel " + stock.ticker
             + " era " + std::to_string(stock.price) + ".\n\n\nAlerta de "
             + action
-            + " adicionado para o preco de " + std::to_string(stock.alertPrice);
+            + " adicionado para o preco de " + std::to_string(stock.alertPrice)
+            + "\r\n\nStock Quote Alert.\r\n";
 
-    // deal with file not opening
     std::ofstream file { "./cache/tempMail" };
     file << payload;
     file.flush();
@@ -98,10 +98,33 @@ void sendEmail(SMTPSettings settings) {
         curl_easy_setopt(curlHandle, CURLOPT_READDATA, file);
         curl_easy_setopt(curlHandle, CURLOPT_UPLOAD, 1L);
 
-        res = curl_easy_perform(curlHandle); //send mail
+        try {
+            res = curl_easy_perform(curlHandle); //send mail
+            if (res == CURLE_LOGIN_DENIED) {
+                throw "login denied";
+            }
+            else if(res != CURLE_OK){
+                throw -1;
+            }
+        }
+        catch (char* loginDenied) {
+            std::cout << "curl_easy_perform() failed: "
+                << curl_easy_strerror(res) << '\n'
+                << "Check if two factor authentication is disabled.\n";
+
+            curl_slist_free_all(recipients);
+            curl_easy_cleanup(curlHandle);
+            std::exit(0);
+        }
+        catch (int){
+            std::cout << "curl_easy_perform() failed: "
+                << curl_easy_strerror(res) << '\n';
+
+            curl_slist_free_all(recipients);
+            curl_easy_cleanup(curlHandle);
+            std::exit(0);
+        }
     }
-    if (res != CURLE_OK)
-        std::cout << "curl_easy_perform() failed: " << curl_easy_strerror(res) << '\n';
     curl_slist_free_all(recipients);
     curl_easy_cleanup(curlHandle);
 }

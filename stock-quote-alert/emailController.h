@@ -1,6 +1,5 @@
 #ifndef EMAILCONTROLLER_H
 #define EMAILCONTROLLER_H
-//#include priceController.h
 #include <string>
 struct SMTPSettings {
     std::string smtpServerURL {};
@@ -19,6 +18,4 @@ struct PriceAlert {
 };
 void composeMail(PriceAlert stock, SMTPSettings smtpSettings);
 void sendEmail(SMTPSettings settings);
-//const char* composeMail(PriceAlert stock, SMTPSettings smtpSettings);
-//void sendEmail(const char* payload, SMTPSettings settings);
 #endif
