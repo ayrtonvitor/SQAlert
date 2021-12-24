@@ -1,13 +1,11 @@
-#include "dataRequestController.cpp"
 #include "dataRequestController.h"
 #include "emailController.h"
-#include "emailController.cpp"
+#include "settings.h"
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <unistd.h>
 
-SMTPSettings getSettings();
 
 int main(int argc, char* argv[]) {
     std::string ticker { argv[1] };
@@ -21,7 +19,7 @@ int main(int argc, char* argv[]) {
     SMTPSettings smtpSettings {getSettings()};
 
     // Keep monitoring until program stops
-    while(1) {
+    while(true) {
         StockPrice currentPrice { getPrice(ticker) };
 
         if (currentPrice.price >= upper) {
@@ -47,25 +45,5 @@ int main(int argc, char* argv[]) {
     }
     
 }
-SMTPSettings getSettings(){
-    std::ifstream settingsRaw { "./keys/smtpSettings"};
-    SMTPSettings settings {};
 
-    std::string ph;
-    settingsRaw >> ph;
-    settings.smtpServerURL = ph;
-    settingsRaw >> ph;
-    settings.senderUserName = ph;
-    settingsRaw >> ph;
-    settings.password = ph;
-    settingsRaw >> ph;
-    settings.fromMail = ph;
-    settingsRaw >> ph;
-    settings.toMail = ph;
-    settingsRaw >> ph;
-    settings.pathCACertificate = ph;
-
-    settingsRaw.close();
-    return settings;
-}
 
