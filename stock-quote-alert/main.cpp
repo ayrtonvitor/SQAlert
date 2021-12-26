@@ -18,32 +18,45 @@ int main(int argc, char* argv[]) {
     PriceAlert alert {};
     SMTPSettings smtpSettings {getSettings()};
 
-    // Keep monitoring until program stops
-    while(true) {
-        StockPrice currentPrice { getPrice(ticker) };
+    ticker = validateTicker(ticker);
 
-        if (currentPrice.price >= upper) {
-            alert.ticker = currentPrice.name;
-            alert.price = currentPrice.price;
-            alert.time = currentPrice.time;
-            alert.alertPrice = upper;
-            alert.action = "sell";
-            composeMail(alert, smtpSettings);
-            sendEmail(smtpSettings);
+    std::unordered_set<std::string> tickerList;
+    if (!(tickerSet(&tickerList)) && !(tickerList.find(ticker) == tickerList.end()))
+        std::cout << "Asset code not supported.\n";
+    else {
+        // Keep monitoring until program stops
+        StockPrice currentPrice { };
+        while(true) {
+            try {
+                currentPrice = getPrice(ticker);
+            }
+            catch (char* errorMessage) {
+                std::cout << errorMessage << '\n';
+                break;
+            }
+
+            if (currentPrice.price >= upper) {
+                alert.ticker = currentPrice.name;
+                alert.price = currentPrice.price;
+                alert.time = currentPrice.time;
+                alert.alertPrice = upper;
+                alert.action = "sell";
+                composeMail(alert, smtpSettings);
+                sendEmail(smtpSettings);
+            }
+            else if (currentPrice.price <= lower) {
+                alert.ticker = currentPrice.name;
+                alert.price = currentPrice.price;
+                alert.time = currentPrice.time;
+                alert.alertPrice = lower;
+                alert.action = "buy";
+                composeMail(alert, smtpSettings);
+                sendEmail(smtpSettings);
+            } 
+
+            sleep(120);
         }
-        else if (currentPrice.price <= lower) {
-            alert.ticker = currentPrice.name;
-            alert.price = currentPrice.price;
-            alert.time = currentPrice.time;
-            alert.alertPrice = lower;
-            alert.action = "buy";
-            composeMail(alert, smtpSettings);
-            sendEmail(smtpSettings);
-        } 
-
-        sleep(120);
     }
-    
 }
 
 

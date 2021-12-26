@@ -1,8 +1,10 @@
 #include "catchConf.h"
 #include "../stock-quote-alert/dataRequestController.h"
 #include "../stock-quote-alert/dataRequestController.cpp"
+#include <cstdlib>
 #include <fstream>
 #include <string>
+#include <unordered_set>
 
 TEST_CASE("makePriceRequest", "[HTTP], [API]") {
     SECTION("valid api key") { std::ifstream file { "../stock-quote-alert/keys/api.key" };
@@ -44,14 +46,30 @@ TEST_CASE("validateTicker", "[ticker]"){
 
 
 TEST_CASE("getPrice", "[STOCK], [PRICE]") {
-    StockPrice resp { getPrice("eztc3") };
+    StockPrice resp { getPrice("EZTC3") };
     REQUIRE( resp.name == "EZTC3" );
 
-    resp = getPrice("lRen3");
+    resp = getPrice("LREN3");
     REQUIRE( resp.name == "LREN3" );
 
     resp = getPrice("KNRI11");
     REQUIRE( resp.name == "KNRI11");
 
-    //need to implement bad ticker name errorr in getPrice()
+}
+
+TEST_CASE("tickerSet") {
+    std::unordered_set<std::string> tickerList;
+    REQUIRE(tickerSet(&tickerList));
+    
+    std::system("mv ../stock-quote-alert/lib/assets ../stock-quote-alert/lib/assets1");
+    bool result;
+    try {
+        result = !tickerSet(&tickerList);
+    }
+    catch (char*){
+        ;
+    }
+    REQUIRE(result == false);
+    
+    std::system("mv ../stock-quote-alert/lib/assets1 ../stock-quote-alert/lib/assets");
 }

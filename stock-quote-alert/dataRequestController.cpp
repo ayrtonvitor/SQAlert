@@ -14,6 +14,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <unordered_set>
 //using json = nlohmann::json;  //clause in dataRequestController.h
 
 
@@ -24,7 +25,7 @@ struct MemoryStruct {
     std::size_t size {};
 };
 
-std::size_t writeMemoryCallback( void *contents, std::size_t size,
+static std::size_t writeMemoryCallback( void *contents, std::size_t size,
                                             std::size_t nmemb, void *userp ){
     /* Callback function to handle HTTP response using struct MemoryStruct
      * This function is an option for curl_easy_setopt() with
@@ -76,37 +77,35 @@ json makePriceRequest( std::string ticker, std::string apiKey ) {
     apiResponse.memory = static_cast<char*>(std::malloc(1));
     apiResponse.size = 0;
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&apiResponse);
+    json respJSON;
 
-    res = curl_easy_perform(curl_handle);
+    try {
+        res = curl_easy_perform(curl_handle);
 
-    if(res != CURLE_OK) {
-        std::cout << "curl_easy_perform() failed: "
-                  << curl_easy_strerror(res) << '\n';
-        //should raise error here
-        return json::parse("{}");
-    }
-    else {
-        json respJSON = json::parse(apiResponse.memory);
-        std::free(apiResponse.memory);
+        if (res != CURLE_OK) {
+            throw -1;
+        }
         
-        /* should raise error in incorrect responses:
-         * respJSON["results"][ticker]["error"] == 1 << api response
-         * also, should verify is the response is that of an incorrect api key*/
+        respJSON = json::parse(apiResponse.memory);
+        std::free(apiResponse.memory);
+
+        if (!respJSON["valid_key"]) {
+            throw "Invalid API key.";
+        }
         return respJSON["results"][ticker];
     }
+    catch (int){
+        std::cout << "curl_easy_perform() failed: "
+                  << curl_easy_strerror(res) << '\n';
+        return json::parse("{}");
 }
 
-/*
-struct StockPrice {
-    std::string name {};
-    std::string time {};
-    double price {};
-}; */
+}
 
 std::string validateTicker(std::string ticker) {
-    /* THIS FUNCTION SHOULD BE SOMEWHERE ELSE BEFORE IN THE EXECUTION FLOW
-     * Filters (some) invalid tickers and make sure they are uppercase.
+    /* Filters (some) invalid tickers and make sure they are uppercase.
      * Prevents bad API requests (limited resources).
+     * Used only when list of available assets cannot be loaded.
      *
      * RETURNS: upper case supposedly valid ticker or "" if invalid*/
 
@@ -127,19 +126,48 @@ std::string validateTicker(std::string ticker) {
     return validTicker;
 }
 
-StockPrice getPrice(std::string inputTicker) {
-    /*
-     * Gets stock price for a specified ticker*/
-    std::string ticker { validateTicker(inputTicker) };
+bool tickerSet(std::unordered_set<std::string>* tickers) {
+    /* Gets the set of tickers which the API supports.
+     * Returns `true` if could load file and input the elements in the set.
+     * */
+
+    std::ifstream assets{};
+    try {
+        assets.open("lib/assets");
+        if (!assets)
+            throw "Could not find list of assets.";
+        while (assets) {
+            std::string ticker;
+            assets >> ticker;
+            (*tickers).insert(ticker);
+        }
+    }
+    catch (char* errorMessage) {
+        std::cout << errorMessage << '\n';
+        return false;
+    }
+
+    return true;
+}
+
+StockPrice getPrice(std::string ticker) {
+    /* Gets stock price for a specified ticker*/
     std::ifstream file { "keys/api.key" }; //should raise error if not able to load key
     std::string key;
     file >> key;
     
-    //for some reason, there is a problem with c++ specs and braces 
-    //initialization will cause the json response to get back as a list of some
-    //sort. Use `=` initialization, if needed
-    json resp;
-    resp = makePriceRequest(ticker, key);
+    /*for some reason, there is a problem with c++ specs and braces 
+    initialization will cause the json response to get back as an array of
+    some sort. Use `=` initialization, if needed*/
+    json resp = makePriceRequest(ticker, key);
+
+
+    try {
+        if (resp["error"]) {
+            throw "API couldn't respond properly. Check if ticker is correct or supported";
+        }
+    }
+    catch (json::exception) { ; }
 
     return {
         resp["symbol"],
