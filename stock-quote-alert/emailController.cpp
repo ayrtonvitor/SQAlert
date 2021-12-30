@@ -107,7 +107,7 @@ void sendEmail(SMTPSettings settings) {
                 throw -1;
             }
         }
-        catch (char* loginDenied) {
+        catch (const char* loginDenied) {
             std::cout << "curl_easy_perform() failed: "
                 << curl_easy_strerror(res) << '\n'
                 << "Check if two factor authentication is disabled.\n";

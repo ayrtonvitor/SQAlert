@@ -142,7 +142,7 @@ bool tickerSet(std::unordered_set<std::string>* tickers) {
             (*tickers).insert(ticker);
         }
     }
-    catch (char* errorMessage) {
+    catch (const char* errorMessage) {
         std::cout << errorMessage << '\n';
         return false;
     }
