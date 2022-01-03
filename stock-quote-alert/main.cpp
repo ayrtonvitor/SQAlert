@@ -1,12 +1,33 @@
-#include "dataRequestController.h"
-#include "emailController.h"
-#include "settings.h"
-#include <cstdlib>
+//#include "dataRequestController.h"
+//#include "emailController.h"
+//#include "monitoredAssetsDB.cpp"
+#include "Options.h"
+//#include "settings.h"
+//#include <cstdlib>
 #include <iostream>
-#include <sstream>
-#include <string>
-#include <unistd.h>
+//#include <sstream>
+//#include <string>
+//#include <unistd.h>
 
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        std::cout << "What functionality do you want to perform?\n"
+            << "Enter `SQAlert add [SYMBOL] [lower_price] [upper_price]` "
+            << "to monitor new stock.\n";
+    }
+    else {
+        Options opt(argv);
+    }
+    return 0;
+}
+
+ /*   double lower, upper;
+    std::stringstream convert{ cLower };
+    convert >> upper;
+    convert = static_cast<std::stringstream>(cUpper);
+    convert >> lower; 
+    
 void priceMonitor(const std::string& ticker, double lower, double upper) {
     StockPrice currentPrice { };
     PriceAlert alert {};
@@ -43,27 +64,5 @@ void priceMonitor(const std::string& ticker, double lower, double upper) {
         sleep(120);
     }
 }
-
-int main(int argc, char* argv[]) {
-
-    std::string ticker { argv[1] };
-    double lower, upper;
-    std::stringstream convert{ argv[2] };
-    convert >> upper;
-    convert = static_cast<std::stringstream>(argv[3]);
-    convert >> lower;
-
-    ticker = validateTicker(ticker);
-
-    std::unordered_set<std::string> tickerList;
-    if (!(tickerSet(&tickerList)) && !(tickerList.find(ticker) == tickerList.end()))
-        std::cout << "Asset code not supported.\n";
-    else {
-        // Keep monitoring until program stops
-        priceMonitor(ticker, lower, upper);
-    }
-
-    return 0;
-}
-
+    */
 

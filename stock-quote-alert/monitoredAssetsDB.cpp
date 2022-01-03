@@ -1,3 +1,5 @@
+#ifndef MONITOREDASSETSDB_CPP
+#define MONITOREDASSETSDB_CPP
 #include <iostream>
 #include <sqlite3.h>
 #include <sstream>
@@ -8,14 +10,14 @@
 using assetTuple_t = std::tuple<std::string, double, double>;
 using assetList_t = std::vector<assetTuple_t>;
 
-assetList_t assetVector; //this should be a member variable, but I don't know
+static assetList_t assetVector; //this should be a member variable, but I don't know
                         //how to call member functions through pointers, as
                         //they need to be static, and static functions can't
                         //modify non static member variables
 
-class MonitoredAssetDB {
+class MonitoredAssetsDB {
 public:
-    MonitoredAssetDB() {
+    MonitoredAssetsDB() {
         /*Opens database*/
         const char path[] { "dataBase/stock_quote_alert.db" };
         reqCode = sqlite3_open(path, &db);
@@ -26,14 +28,15 @@ public:
         }
     }
     
-    ~MonitoredAssetDB() {
-        sqlite3_free(errorMsg);
+    ~MonitoredAssetsDB() {
+        if (!errorMsg) sqlite3_free(errorMsg);
         sqlite3_close(db);
     }
 
-    void checkTracker(std::string ticker) {
+    void checkTracker(const std::string& ticker) {
         /*Check if a given asset is being tracked and/or its price limits.*/
-        std::string sqlReq{ "SELECT * FROM assets" };
+        std::string sqlReq{ "SELECT * FROM assets WHERE ticker = \'"
+                            + ticker + "\';" };
         try {
             makeSQLReq(sqlReq, selectCallback);
             std::cout << std::get<0>(assetVector[0]) << ' '
@@ -45,10 +48,10 @@ public:
             std::cout << errorMessage << '\n';
             sqlite3_free(errorMsg);
         }
-   }
+    }
 
-    void trackNewAsset(std::string ticker, std::string date,
-                std::string lower, std::string upper){
+    void trackNewAsset(const std::string& ticker, const std::string& date,
+                const std::string& lower, const std::string& upper){
         /* Insert new asset to be tracked to the list.
          * Possible problem with SQL injection*/
 
@@ -58,9 +61,9 @@ public:
         try {
             makeSQLReq(sqlReq, defaultCallback);
         }
-        catch (const char* errorMessage) {
+        catch (int) {
             std::cout << "Could not add asset to the list.\n";
-            std::cout << errorMessage << '\n';
+            std::cout << errorMsg << '\n';
             sqlite3_free(errorMsg);
         }
     }
@@ -85,9 +88,11 @@ public:
         assetVector.clear();
         return toReturn;
     }
-    void stopTrackingAsset(std::string ticker) {
+
+    void stopTrackingAsset(const std::string& ticker) {
         /* Removes asset from the data base and it won't be tracked anymore.*/
-        std::string sqlReq{ "DELETE FROM assets WHERE ticker = " + ticker + ";"};
+        std::string sqlReq{ "DELETE FROM assets WHERE ticker = \'" + ticker + "\';"};
+        std::cout << sqlReq;
         try {
             makeSQLReq(sqlReq, defaultCallback);
         }
@@ -98,12 +103,12 @@ public:
 
     }
 
-    void updateTrackedAsset(std::string ticker, std::string date,
-                std::string lower, std::string upper){
+    void updateTrackedAsset(const std::string& ticker,const std::string& date,
+                const std::string& lower,const std::string& upper){
         /* Update value bounds for tracked asset.*/
         std::string sqlReq{ "UPDATE assets SET date = \'" + date
                     + "\', buy_price = " + lower + ", sell_price = "
-                    + upper + " WHERE ticker = " + ticker + "; "};
+                    + upper + " WHERE ticker = \'" + ticker + "\'; "};
         try {
             makeSQLReq(sqlReq, defaultCallback);
         }
@@ -112,18 +117,8 @@ public:
             std::cout << errorMessage << '\n';
             sqlite3_free(errorMsg);
         }
-        sqlReq = "SELECT * FROM assets WEHERE ticker = " + ticker + ";";
-        try {
-            makeSQLReq(sqlReq, selectCallback);
-            std::cout << "Updated " << std::get<0>(assetVector[0]) << ' '
-                << std::get<1>(assetVector[0]) << ' ' 
-                << std::get<2>(assetVector[0]) << '\n';
-            assetVector.clear();
-        }
-        catch (const char* errorMessage) {
-            std::cout << errorMessage << '\n';
-            sqlite3_free(errorMsg);
-        }
+        std::cout << "Updated ";
+        this->checkTracker(ticker);
     }
 
     void closeDataBase(){
@@ -154,7 +149,12 @@ private:
     void makeSQLReq( std::string sqlReq, 
                      int (*callback)(void*, int, char**, char**) ) {
 
-        reqCode = sqlite3_exec(db, sqlReq.c_str(), callback, 0, &errorMsg);
+        try{
+            reqCode = sqlite3_exec(db, sqlReq.c_str(), callback, 0, &errorMsg);
+        }
+        catch (int){
+            std::cout << errorMsg << '\n';
+        }
         
         if (reqCode != SQLITE_OK) {
             throw errorMsg;
@@ -162,4 +162,4 @@ private:
     }
 };
 
-
+#endif
