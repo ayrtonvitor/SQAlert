@@ -1,13 +1,5 @@
-//#include "dataRequestController.h"
-//#include "emailController.h"
-//#include "monitoredAssetsDB.cpp"
 #include "Options.h"
-//#include "settings.h"
-//#include <cstdlib>
 #include <iostream>
-//#include <sstream>
-//#include <string>
-//#include <unistd.h>
 
 
 int main(int argc, char* argv[]) {

@@ -8,8 +8,8 @@
  * resources from that directory.
  *
  * Don't forget to compile with `-l curl`*/
-#include "./emailController.h"
-#include "./emailController.cpp"
+#include "./email.h"
+#include "./email.cpp"
 #include <fstream>
 
 

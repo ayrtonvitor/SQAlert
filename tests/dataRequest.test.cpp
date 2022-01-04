@@ -1,6 +1,6 @@
 #include "catchConf.h"
-#include "../stock-quote-alert/dataRequestController.h"
-#include "../stock-quote-alert/dataRequestController.cpp"
+#include "../stock-quote-alert/dataRequest.h"
+#include "../stock-quote-alert/dataRequest.cpp"
 #include <cstdlib>
 #include <fstream>
 #include <string>

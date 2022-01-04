@@ -9,13 +9,12 @@
  *
  * Based on: https://curl.se/libcurl/c/smtp-tls.html
  *****************************************************************************/
-#include "emailController.h"
+#include "email.h"
 #include <curl/curl.h>
 #include <cstring>
 #include <ctime>
 #include <fstream>
 #include <iostream>
-#include <string>
 
 void composeMail(PriceAlert stock, SMTPSettings smtpSettings){
     /* Composese the email recommending buying or selling a given stock

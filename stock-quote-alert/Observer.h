@@ -1,8 +1,8 @@
 #ifndef OBSERVER_H
 #define OBSERVER_H
 
-#include "dataRequestController.h"
-#include "emailController.h"
+#include "dataRequest.h"
+#include "email.h"
 #include "settings.h"
 #include <tuple>
 #include <vector>

@@ -4,7 +4,7 @@
  * Based on: https://curl.se/libcurl/c/getinmemory.html
  *****************************************************************************/
 
-#include "dataRequestController.h"
+#include "dataRequest.h"
 #include "./lib/json.hpp"
 #include <algorithm>
 #include <curl/curl.h>
@@ -13,9 +13,6 @@
 #include <cstring>                      //memcpy
 #include <fstream>
 #include <iostream>
-#include <string>
-#include <unordered_set>
-//using json = nlohmann::json;  //clause in dataRequestController.h
 
 
 // Struct to handle the API response

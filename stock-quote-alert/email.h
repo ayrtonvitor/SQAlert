@@ -1,5 +1,5 @@
-#ifndef EMAILCONTROLLER_H
-#define EMAILCONTROLLER_H
+#ifndef EMAIL_H
+#define EMAIL_H
 #include <string>
 struct SMTPSettings {
     std::string smtpServerURL {};

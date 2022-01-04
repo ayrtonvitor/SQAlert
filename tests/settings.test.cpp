@@ -1,5 +1,5 @@
 #include "catchConf.h"
-#include "../stock-quote-alert/emailController.h"
+#include "../stock-quote-alert/email.h"
 #include "../stock-quote-alert/settings.cpp"
 #include "../stock-quote-alert/settings.h"
 #include <string>

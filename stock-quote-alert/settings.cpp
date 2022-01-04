@@ -1,9 +1,7 @@
-#include "emailController.h"
 #include "settings.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <string>
 
 SMTPSettings getSettings(std::string settingsPath/* = "./keys/smtpSettings"*/){
     SMTPSettings settings {};
